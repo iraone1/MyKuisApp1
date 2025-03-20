@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "596510346863",
+    "firebase_url": "https://myquiz-28007-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "myquiz-28007",
+    "storage_bucket": "myquiz-28007.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596510346863:android:5e6047094af6247933c79a",
+        "android_client_info": {
+          "package_name": "com.mykuisapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYp33cvKZlRPeFz6u0-YS6QU9rwAIwaYk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
