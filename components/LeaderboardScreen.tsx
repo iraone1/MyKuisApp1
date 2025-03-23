@@ -7,6 +7,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const LeaderboardScreen = ({ route }) => {
   const initialCategory = route?.params?.category || '';
+  
   const [category, setCategory] = useState(initialCategory);
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -17,9 +18,10 @@ const LeaderboardScreen = ({ route }) => {
   const [userProfilePic, setUserProfilePic] = useState('');
 
   const options = {
-    IPA: 'Science',
-    MTK: 'Math',
-    IPS: 'History',
+    IPA: 'Ilmu Pengetahuan Alam',
+    MTK: 'Matematika',
+    IPS: 'Ilmu Pengetahuan Sosial',
+    Algoritma: 'Algoritma',
   };
 
   // Mengambil user ID dan data pengguna dari tabel users
@@ -100,16 +102,26 @@ const LeaderboardScreen = ({ route }) => {
             duration: rawData[key].endTime - rawData[key].startTime,
           };
 
+          // Calculate percentage score if needed
           if (entry.category === category) {
-            if (!scoresByUser[entry.userId] || scoresByUser[entry.userId].score < entry.score) {
-              scoresByUser[entry.userId] = entry;
+            // Calculate the score percentage if totalQuestions exists and score is not already a percentage
+            // This ensures compatibility with both old and new data formats
+            const scoreValue = entry.totalQuestions 
+              ? ((entry.rawScore / entry.totalQuestions) * 100) 
+              : entry.score;
+              
+            if (!scoresByUser[entry.userId] || scoresByUser[entry.userId].scoreValue < scoreValue) {
+              scoresByUser[entry.userId] = {
+                ...entry,
+                scoreValue: scoreValue // Store calculated percentage for sorting
+              };
             }
           }
         });
 
         // Ubah ke array dan urutkan
         const sortedData = Object.values(scoresByUser)
-          .sort((a, b) => (b.score !== a.score ? b.score - a.score : a.duration - b.duration))
+          .sort((a, b) => (b.scoreValue !== a.scoreValue ? b.scoreValue - a.scoreValue : a.duration - b.duration))
           .slice(0, 10);
 
         setLeaderboard(sortedData);
@@ -156,12 +168,12 @@ const LeaderboardScreen = ({ route }) => {
           selectedValue={category}
           onValueChange={setCategory}
           style={styles.picker}
-          dropdownIconColor="white" // Fix for the white triangle
-          mode="dropdown"
+          dropdownIconColor="white"
+          itemStyle={{backgroundColor: 'black'}} 
         >
-          <Picker.Item label="Pilih Mata Pelajaran" value="" enabled={false} />
+          <Picker.Item label="Pilih Mata Pelajaran" value="" enabled={false} color='gray' style={{backgroundColor: 'black'}} />
           {Object.entries(options).map(([key, label]) => (
-            <Picker.Item key={key} label={label} value={key} color="#333" /> // Added text color for items
+            <Picker.Item key={key} label={label} value={key} color="white" style={{backgroundColor: 'black'}} />
           ))}
         </Picker>
       </View>
@@ -181,12 +193,17 @@ const LeaderboardScreen = ({ route }) => {
             else if (index === 1) trophyIcon = <Ionicons name="trophy" size={24} color="#C0C0C0" />;
             else if (index === 2) trophyIcon = <Ionicons name="trophy" size={24} color="#CD7F32" />;
 
+            // Calculate percentage score based on totalQuestions or use scoreValue
+            const scoreDisplay = item.scoreValue 
+              ? `${item.scoreValue.toFixed(1)}%` 
+              : `${item.score.toFixed(1)}%`;
+
             return (
               <View style={styles.row}>
                 <Text style={styles.rank}>{index + 1}.</Text>
                 <Image source={{ uri: item.profilePic || 'https://via.placeholder.com/50' }} style={styles.profilePic} />
                 <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
-                <Text style={styles.score}>{item.score} pts</Text>
+                <Text style={styles.score}>{scoreDisplay}</Text>
                 <View style={styles.trophyContainer}>{trophyIcon}</View>
                 {item.userId !== userId && !friends[item.userId] && !friendRequests[item.userId] ? (
                   <TouchableOpacity 
@@ -217,6 +234,7 @@ const styles = StyleSheet.create({
     borderWidth: 2.5,
     borderColor: '#fed800',
   },
+  
   container: { 
     flex: 1, 
     padding: 20, 
@@ -234,13 +252,17 @@ const styles = StyleSheet.create({
     borderWidth: 2.5, 
     borderRadius: 5, 
     marginBottom: 20,
-    backgroundColor: 'black' // Added slight background
+    backgroundColor: 'black'// Added slight background
   },
   picker: { 
     height: 50, 
     width: '100%',
     color: 'white',
-    backgroundColor: 'transparent' // Ensure transparent background
+    backgroundColor: 'black',
+  },
+  pickerItem: {
+    backgroundColor: 'black',
+    color: 'white',
   },
   row: {
     flexDirection: 'row',
@@ -256,13 +278,13 @@ const styles = StyleSheet.create({
     width: 30, // Supaya angka ranking sejajar
     fontSize: 18,
     fontWeight: 'bold',
-    color: 'white', // Changed from white to dark gray
+    color: 'white',
     textAlign: 'center',
   },
   name: {
     flex: 1, // Nama akan mengisi ruang yang tersedia
     fontSize: 18,
-    color: 'white', // Changed from white to dark gray
+    color: 'white',
     marginLeft: 10,
   },
   addFriendPlaceholder: {
@@ -274,7 +296,7 @@ const styles = StyleSheet.create({
     minWidth: 80, // Supaya ukuran tetap, tidak berubah
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#28a745',
+    color: 'white',
     textAlign: 'right', // Supaya skor sejajar kanan
   },
   trophyContainer: {
